@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sharing Is Caring – How to Let the Compiler Know What You're Thinking</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel='stylesheet' type='text/css' href='style.css' />
+</head>
+<body>
+<textarea id="source">
+
+class: center, middle, transition, intro
+
+  #  Sharing Is Caring – How to Let the Compiler Know What You're Thinking
+
+.caption[Daniel Beskin]
+
+---
+## Intro
+
+```
+scala> val x = 1
+{{content}}
+```
+--
+
+​x: Int = 1
+
+{{content}}
+--
+
+scala> val y = if (x > 2) Some("abc") else None
+{{content}}
+--
+
+​y: Option[String] = None
+---
+
+## Intro
+
+.centered.theMatrix[![](the-matrix.jpg)]
+
+---
+
+## Intro
+
+```
+scala> val num = Json.write(1)
+
+​num: Json = 1
+```
+
+--
+
+```
+scala> val someNum = Json.write(Some(1))
+
+​someNum: Json = 1
+```
+
+---
+
+## Intro
+
+```
+scala> val tryNum = Json.write(Try(1))
+```
+
+--
+```asciidoc
+<console>:17: error: could not find implicit value 
+for parameter writer: Writer[scala.util.Try[Int]]
+       val tryNum = Json.write(Try(1))
+                              ^
+```
+
+---
+## Intro
+
+```
+val appID = 123
+val feedID = 456
+val postID = 789
+
+fetchPost(appID, feedID, postID)
+```
+
+--
+
+```asciidoc
+Exception in thread "main" 
+  cool.storage.RecordNotFoundException: invalid feed ID
+  	at cool.storage.fetch(Fetcher.scala:17)
+  	at cool.storage.run(Runner.scala:35)
+  	at cool.storage.build(Builder.scala:32)
+      ...
+```
+
+--
+
+```
+def fetchPost(appID: Int, 
+              postID: Int, 
+              feedID: Int): String
+```
+
+---
+
+## Intro
+
+.terminator[![](terminator.jpg)]
+
+--
+
+.oldRobot[![](old-robot.jpg)]
+
+---
+
+## Communication
+
+- Types
+
+- Implicits
+
+- Macros
+
+---
+
+class: middle, transition
+
+.quote[> There are type types, and type type types.]
+
+.footnote[― Steve Yegge on Scala]
+
+---
+
+## Types
+
+- Types are compiler-verified facts
+
+--
+
+- More types == more consistency checks
+
+--
+
+- Sophisticated types can express complex facts
+
+---
+## Typed Wrappers
+
+???
+
+- Since types in Scala do not require much ceremony or syntax
+
+--
+
+```
+def fetchPost(appID: Int, 
+              postID: Int, 
+              feedID: Int): String
+```
+
+--
+
+```
+fetchPost(appID = 123, feedID = 456, postID = 789)
+```
+
+???
+
+- Named arguments do help with preventing mistakes when passing multiple similarly-typed arguments
+- But we haven't told the compiler much
+- It's just a local piece of knowledge about the current method invocation
+- Not something that the compiler can keep track of globally
+- Suppose you want ask the compiler something like: where are all the usages of application-IDs in the code
+- There's no way to do this with an Int standing for the application-ID
+- We haven't communicated to the compiler the special nature of these particular Ints
+- So it treats just as any other Ints in the system
+- We'll use simple wrappers to communicate to our intent to the compiler
+
+---
+
+## Typed Wrappers
+
+```
+case class AppID(value: Int)
+case class PostID(value: Int)
+case class FeedID(value: Int)
+
+case class PostContent(value: String)
+```
+
+--
+
+```
+def fetchPost(appID: AppID,  
+              postID: PostID, 
+              feedID: FeedID): PostContent
+```
+
+---
+
+## Typed Wrappers
+
+```
+scala> fetchPost(AppID(123), FeedID(456), PostID(789))
+```
+
+--
+
+```asciidoc
+<console>:17: error: type mismatch;
+ found   : FeedID
+ required: PostID
+              fetchPost(AppID(123), FeedID(456), PostID(789))
+                                          ^
+<console>:17: error: type mismatch;
+ found   : PostID
+ required: FeedID
+              fetchPost(AppID(123), FeedID(456), PostID(789))
+                                                       ^
+```
+
+---
+
+## Typed Wrappers
+
+- Search by type
+- Refactoring ability
+- Customization
+  - Smart constructors
+  - Custom serialization formats
+
+---
+
+## Programming is Hard
+
+???
+
+- I want to make a brief interlude just to point out how hard programming is
+- What I want to say is that programming is hard
+- I mean, suppose you've got your dream-job doing Scala or something
+- And you imagine that from now on you'll never set foot in any other scary language out there
+- Right?
+- Wrong
+
+--
+
+```html
+<form action="/choice?user=${userID}">
+  <div>
+    This is your last chance, ${userName}. 
+    After this, there is no turning back: 
+  </div>
+  
+  <input type="radio" name="pill" value="blue">
+    You take the blue pill — the story ends
+  </input>
+   
+  <input type="radio" name="pill" value="red">
+    You take the red pill — you stay in Wonderland
+  </input>
+    
+  <input type="submit" value="Choose" onclick="validate()">
+</form>
+
+<script> 
+  function validate() { processToken(${token}) }
+</script>
+```
+
+???
+
+- Not only that we're dealing here with three languages:
+- HTML, Javascript and URL syntax
+- But we're also interpolating code into them
+- In every interpolation we have the risk of code injection
+---
+
+## Language Wrappers
+
+--
+
+```
+case class HTMLCode(value: String)
+case class JSCode(value: String)
+case class URLCode(value: String)
+```
+
+---
+
+## Language Wrappers
+
+```
+case class TaintedHTMLCode(value: String)
+case class TaintedJSCode(value: String)
+case class TaintedURLCode(value: String)
+
+{{content}}
+```
+
+--
+case class SafeHTMLCode(value: String)
+case class SafeJSCode(value: String)
+case class SafeURLCode(value: String)
+
+---
+
+## Language Wrappers
+
+```
+case class SensitiveTaintedHTMLCode(value: String)
+case class SensitiveTaintedJSCode(value: String)
+case class SensitiveTaintedURLCode(value: String)
+
+case class SensitiveSafeHTMLCode(value: String)
+case class SensitiveSafeJSCode(value: String)
+case class SensitiveSafeURLCode(value: String)
+
+{{content}}
+```
+
+--
+case class AnonymizedTaintedHTMLCode(value: String)
+case class AnonymizedTaintedJSCode(value: String)
+case class AnonymizedTaintedURLCode(value: String)
+
+case class AnonymizedSafeHTMLCode(value: String)
+case class AnonymizedSafeJSCode(value: String)
+case class AnonymizedSafeURLCode(value: String)
+
+???
+
+- The problem with this approach is that we're not telling the compiler anything useful
+- We are trying to encode complex information in the class name
+- But the compiler has no way of knowing what it means
+- Since it only sees single names
+- You cannot ask it meaningful questions like: all place occurrences of safe code
+
+---
+
+## Phantom Types
+
+???
+
+- Since we are still talking about types, let's try to find a more meaningful to tell the compiler about our domain
+
+--
+
+```
+sealed trait Language
+
+object Language {
+  trait HTML extends Language
+  trait JS extends Language
+  trait URL extends Language
+}
+
+{{content}}
+```
+
+--
+
+sealed trait Safety
+
+object Safety {
+  trait Tainted extends Safety
+  trait Safe extends Safety
+}
+
+---
+
+## Phantom Types
+
+```
+case class InputCode[L <: Language,                 
+                     S <: Safety](value: String)
+                
+{{content}}
+```
+
+--
+
+def readHTMLInput(): InputCode[HTML, Tainted]
+
+{{content}}
+
+--
+
+def sanitizeHTML(
+  input: InputCode[HTML, Tainted]): InputCode[HTML, Safe]
+  
+{{content}}
+
+--
+
+def interpolate(input: InputCode[HTML, Safe]): Code[HTML]
+
+---
+
+## Phantom Types
+
+```
+val htmlString = readHTMLInput()
+```
+
+--
+```
+scala> interpolate(htmlString)
+```
+
+```asciidoc
+<console>:19: error: type mismatch;
+ found   : InputCode[HTML,Tainted]
+ required: InputCode[HTML,Safe]
+              interpolate(htmlString)
+                          ^
+```
+---
+
+
+## Phantom Types
+
+```
+def anonymize[S <: Safety](
+  input: InputCode[HTML, S]): InputCode[HTML, S]
+```
+
+--
+```
+val jsString: InputCode[JS, Safe]
+```
+
+
+--
+```
+scala> anonymize(jsString)
+```
+
+```asciidoc
+<console>:17: error: type mismatch;
+ found   : InputCode[JS,Safe]
+ required: InputCode[HTML,?]
+              anonymize(jsString)
+                        ^
+```
+---
+
+## More Types
+
+- Algebraic data types
+- Abstract types
+- Higher-kinded types
+- Path-dependent types
+- ...
+
+---
+
+class: center, middle, transition
+
+.implicits[![](implicits.jpg)]
+
+---
+
+## Bad Implicits
+
+--
+
+Don't do this...
+
+```
+implicit def appID(value: Int): AppID = AppID(value)
+
+implicit def postID(value: Int): PostID = PostID(value)
+
+implicit def feedID(value: Int): FeedID = FeedID(value)
+```
+
+--
+
+
+```
+val appID = 123
+val feedID = 456
+val postID = 789
+
+fetchPost(appID, feedID, postID)
+```
+
+---
+
+## Good Implicits
+
+- Pieces of knowledge the compiler can operate on
+- A connection between types and values
+
+---
+
+## Good Implicits
+
+Facts
+```
+implicit val stringWriter: Writer[String]
+```
+--
+
+Rules
+```
+implicit def listWriter[A](
+  implicit aWriter: Writer[A]): Writer[List[A]]
+```
+--
+Derivation requests
+```
+def write[A](value: A)
+            (implicit writer: Writer[A]): Json
+```
+
+--
+
+Automatic derivation
+```
+write(List("a", "b", "c")) // ["a", "b", "c"]
+```
+
+---
+
+## What's in a Name?
+
+--
+
+Facts
+
+```asciidoc
+compiler-fact: Writer[String]
+```
+
+--
+
+Rules
+
+```asciidoc
+compiler-rule: Writer[A] => Writer[String]
+```
+
+--
+
+Derivation requests
+
+```
+def write[A](value: A)
+            (compiler-provided: Writer[A]): Json
+```
+
+---
+
+## Show Me the Code
+
+--
+
+```
+implicit val stringWriter: Writer[String] = 
+  new Writer[String] {
+    def write(value: String) = JsString(value)
+  }
+  
+{{content}}
+
+```
+???
+- We are tying a type `Writer[String]` to a specific value, the implementation of the `Writer`
+
+--
+implicit def listWriter[A](
+  implicit aWriter: Writer[A]): Writer[List[A]] =
+    new Writer[List[A]] {
+      def write(values: List[A]) = JsArray {
+        values.map(aValue => aWriter.write(aValue))
+      }
+    }
+
+{{content}}
+--
+implicit def optionWriter[A](
+  implicit aWriter: Writer[A]): Writer[Option[A]] =
+    new Writer[Option[A]] {
+      def write(value: Option[A]): Json =
+        value.map(aWriter.write)
+          .getOrElse(JsNull)
+    }
+    
+---
+
+## Show Me the Code
+
+```
+val pills: List[Option[String]] =
+  List(Some("blue"), None, Some("red"))
+  
+write(pills) // ["blue", null, "red"]
+```
+
+--
+
+Compiler-derived
+
+```
+val derived: Writer[List[Option[String]]] = 
+  listWriter(optionWriter(stringWriter))
+  
+write(pills)(derived)  
+```
+
+???
+
+- Guided by the type, the compiler managed to generate a value
+
+---
+
+## Show Me the Code
+
+```
+val pills: List[Try[String]] = 
+  List(Try("blue"), Try("red"))
+  
+write(pills) 
+```
+
+--
+
+```asciidoc
+<console>:20: error: could not find implicit value 
+for parameter writer: Writer[List[scala.util.Try[String]]]
+       Json.write(pills)
+                 ^
+```
+
+--
+
+Derivation attempt
+
+```
+val derived: Writer[List[Try[String]]] = 
+  listWriter(???)
+```
+
+---
+
+## Derivation Galore
+
+```
+implicit def tupleWriter[A, B](
+  implicit aWriter: Writer[A],
+           bWriter: Writer[B]): Writer[(A, B)]
+
+implicit def eitherWriter[A, B](
+  implicit aWriter: Writer[A],
+           bWriter: Writer[B]): Writer[Either[A, B]]
+```
+
+---
+
+## Derivation Galore
+
+```
+val pills: List[Option[
+  (Either[Option[(String, Option[String])], String])]] = 
+  
+  List(
+    Some(Left(Some(("blue", None)))),
+    None,
+    Some(Right("red")))
+    
+{{content}}
+```
+
+--
+write(pills) // [["blue", null], null, "red"]
+
+--
+
+Compiler-derived
+```
+listWriter(
+  optionWriter(
+    eitherWriter(
+      optionWriter(
+        tupleWriter(
+          stringWriter, 
+          optionWriter(stringWriter))), 
+      stringWriter)))
+```
+
+???
+- The point being that you can teach the compiler to do fairly complicated things
+
+---
+
+## Implicit Techniques
+
+- Typeclasses
+- Type-driven dependency injection
+- Shapeless
+
+
+---
+class: middle, transition
+
+> Some people, when confronted with a problem, think "I know, I'll use meta-programming". 
+<br />
+<br />
+Now their problem has a problem.
+
+.footnote[― Old programming wisdom, slightly paraphrased]
+
+---
+
+## What are Macros?
+
+- Compile-time functions: AST => AST
+- Can run arbitrary functions at compile-time
+- Still experimental
+- Exactly as dangerous as it sound
+
+---
+
+## What are Macros?
+
+.centered[.carFixing[![](car-fixing.jpg)]]
+
+---
+
+## When to Use Macros?
+
+- As a last resort
+- When standard means of communication fail
+- To implement missing language features
+- To cut down boilerplate
+
+---
+
+## Regular Expressions
+
+```
+val PillType = ".*([Bb]lue|[Rr]ed).*".r
+
+val sentence = "You take the blue pill — the story ends"
+
+val color = sentence match { 
+  case PillType(color) => color 
+} // blue
+```
+
+--
+
+```
+scala> val PillType = ".*([Bb]lue|[Rr]ed.*".r
+```
+
+--
+
+```asciidoc
+java.util.regex.PatternSyntaxException: 
+Unclosed group near index 19
+.*([Bb]lue|[Rr]ed.*
+                   ^
+  at java.util.regex.Pattern.error(Unknown Source)
+  at java.util.regex.Pattern.accept(Unknown Source)
+  at java.util.regex.Pattern.group0(Unknown Source)
+  ...
+```
+
+---
+
+## Compile-time Regular Expressions
+
+--
+
+```
+def regex(literal: String): Regex = macro regexImpl
+
+{{content}}
+```
+
+---
+
+## Compile-time Regular Expressions
+
+```
+def regexImpl(c: Context)
+             (literal: c.Expr[String]): c.Expr[Regex] = {
+  import c.universe._
+  
+{{content}}
+```
+
+.regexBrace[```}```]
+
+--
+  val stringLiteral = literal.tree match {
+    case q"${s: String}" => s
+    case _ => abort {
+      "Only string literals can be parsed as regex"
+    }
+  }
+  
+{{content}}
+--
+  util.Try(stringLiteral.r) match {
+    case Success(_) => ()
+    case Failure(t) => abort {
+      s"Failed compiling a regex: ${t.getMessage}"
+    }
+  }
+  
+{{content}}
+
+--
+
+  c.​Expr[Regex](q"$stringLiteral.r")
+  
+---
+
+## Compile-time Regular Experssions
+
+```
+val PillType = regex(".*([Bb]lue|[Rr]ed).*")
+
+val sentence = 
+  "You take the red pill — you stay in Wonderland"
+
+val color = sentence match { 
+  case PillType(color) => color 
+} // red
+```
+
+
+--
+
+```
+scala> val PillType = regex(".*([Bb]lue|[Rr]ed.*")
+```
+
+```asciiDoc
+<console>:14: error: Failed compiling a regex: 
+Unclosed group near index 19
+.*([Bb]lue|[Rr]ed.*
+                   ^
+       val PillType = regex(".*([Bb]lue|[Rr]ed.*")
+                           ^
+```
+
+---
+
+## Case Class Writer
+
+--
+
+```
+case class Terminator(name: String,
+                      ammo: Option[Int],
+                      dangerous: Boolean)
+                      
+{{content}}
+```
+
+--
+
+object Terminator {
+  implicit val writer = new Writer[Terminator] {
+    
+    def write(terminator: Terminator): Json =
+      JsObject {
+        List(
+          "name" -> Json.write(terminator.name),
+          "ammo" -> Json.write(terminator.ammo),
+          "dangerous" -> Json.write(terminator.dangerous)
+        )
+      }
+  }
+}
+
+---
+
+## The Writer Macro
+
+```
+def makeWriterImpl[A: c.WeakTypeTag]
+                  (c: Context): c.Expr[Writer[A]] = {
+  import c.universe._
+  
+  val tpe = weakTypeOf[A]
+  
+{{content}}
+```
+
+.writerBrace[```}```]
+--
+  val fields: List[TermName] = getFields(tpe)
+  
+{{content}}
+
+--
+  val fieldWriters: List[Tree] = fields.map { field =>
+    q"${field.toString} -> Json.write(value.$field)"
+  }
+  
+{{content}}  
+
+--
+  c.​Expr[Writer[A]] {
+    q"""
+      new Writer[$tpe] {
+        def write(value: $tpe): Json = 
+          Json.JsObject(List(..$fieldWriters))
+      }
+    """
+  }
+  
+---
+
+## The Writer Macro
+
+```
+object Terminator {
+  implicit val writer: Writer[Terminator] = 
+    makeWriter[Terminator] 
+}
+
+{{content}}
+```
+
+--
+val t800 = Terminator(
+  name = "T800", 
+  ammo = Some(42), 
+  dangerous = true)
+  
+Json.write(t800)
+// {"name": "T800", "ammo": 42, "dangerous": true}
+
+---
+
+## Macro Alternatives
+
+- Shapeless
+- Scalameta
+- Code generators
+- Non-experimental macros (in the future, maybe)
+
+---
+
+## Summary
+
+- The compiler is not the enemy
+- Stop struggling, start communicating
+  - Types
+  - Implicits
+  - Macros
+- See what the compiler can do for you
+
+---
+
+class: middle, transition, endSlide
+
+.quote[> ― I talked to the computer at great length 
+<br />
+&nbsp; &nbsp; 
+and explained my view of the Universe to it
+<br />
+<br />
+― And what happened?
+<br />
+<br />
+― It committed suicide
+]
+
+.endQuote.footnote[― Douglas Adams, The Hitchhiker's Guide to the Galaxy]
+
+.questions.centered[Questions?]
+
+    
+</textarea>
+<script
+	src="remark-0.14.0.min.js"
+	type="text/javascript">
+</script>
+<script type="text/javascript">
+  var slideshow = remark.create({
+	countIncrementalSlides: false,
+	highlightLanguage: 'scala',
+	highlightStyle: 'magula' // default, googlecode, magula, vs
+});
+</script>
+</body>
+</html>
