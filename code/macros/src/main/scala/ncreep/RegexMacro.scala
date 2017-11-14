@@ -7,9 +7,9 @@ import scala.util.matching.Regex
 import scala.util.{ Success, Failure }
 
 object RegexMacro {
-  def regex(literal: String): Regex = macro macroImpl
+  def regex(literal: String): Regex = macro regexImpl
 
-  def macroImpl(c: Context)(literal: c.Expr[String]): c.Expr[Regex] = {
+  def regexImpl(c: Context)(literal: c.Expr[String]): c.Expr[Regex] = {
     import c.universe._
 
     def abort(message: String) = c.abort(c.enclosingPosition, message)

@@ -15,7 +15,7 @@ object WriterMacro {
     def getFields(tpe: Type) = {
       val symbols = tpe.decls.collectFirst {
         case m: MethodSymbol if m.isPrimaryConstructor => m
-      }.get.paramLists.head
+      }.get.paramLists.head // unsafe calls to get and head, only for illustration purposes
       
       symbols.map(_.name.toTermName)
     }
@@ -23,6 +23,7 @@ object WriterMacro {
     val fields: List[TermName] = getFields(tpe)
 
     val fieldWriters: List[Tree] = fields.map { field =>
+      // in a more real scenario, the field name should probably be decoded
       q"${field.toString} -> ncreep.Json.write(value.$field)"
     }
 
