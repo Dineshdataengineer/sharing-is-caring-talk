@@ -1,5 +1,5 @@
 .remark-slide-number {
-	/*display: none;*/
+	display: none;
   font-family: sans-serif;
 }
 
@@ -35,6 +35,10 @@ code {
 
 .smallCode .remark-code {
   font-size: 19.5px;
+}
+
+pre {
+  margin-top: 0px;
 }
 
 pre code {
@@ -92,8 +96,8 @@ a {
 }
 
 .caption {
-	position: relative;
-	top: 190px;
+  position: absolute;
+  bottom: 60px;
 }
 
 .intro .caption {
@@ -113,7 +117,7 @@ a {
 
 .intro h1 {
 	line-height: 1.2em;
-	font-size: 1.05em !important;
+	font-size: 1.00em !important;
 }
 
 
@@ -122,7 +126,7 @@ a {
 }
 
 .transition {
-	background-color: rgb(76, 102, 164);
+	background-color: rgb(41, 44, 47);
 	line-height: 1.7em;
 	font-size: 2.8em
 }
@@ -297,24 +301,29 @@ blockquote cite:before {
 }
 
 .theMatrix img {
+  position: absolute;
+  top: 10px;
   width: 700px;
+  left: 50%; 
+  transform: translateX(-50%);
 }
 
 .terminator img {
   position: absolute;
   height: 500px;
-  left: 5%;
+  top: 90px;
+  left: 6%;
 }
 
 .oldRobot img {
   position: absolute;
   height: 500px;
-  right: 5%;
+  top: 90px;
+  right: 6%;
 }
 
 .implicits img {
   height: 450px;
-  border-radius: 10px;
   border:1px solid white;
 }
 
