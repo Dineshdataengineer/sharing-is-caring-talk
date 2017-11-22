@@ -227,7 +227,7 @@ class: middle, transition
 - Each occurrence of a type in our code is a fact that the compiler can track and verify its consistent use
 - So if I state that something is an `Int`, the compiler will makes sure that we consistently use it as an `Int`
 - As a consequence, the more types we have in our program, the more consistency checks the compiler can make for us
-- The more the types are precise, the useful the checks will be
+- The more the types are precise, the more useful the checks will be
 - And since Scala's type-system can be quite sophisticated, we can express fairly complex facts for the compiler to track
 - Let's start with a simple, but very useful example
 
@@ -264,8 +264,8 @@ fetchPost(appID = 123, feedID = 456, postID = 789)
 - Suppose you want ask the compiler something like: where are all the usages of application-IDs in the code
 - There's no way to do this with an `Int` standing for the application-ID
 - We haven't communicated to the compiler the special nature of these particular `Int`s
-- So it treats just as any other `Int`s in the system
-- To actually communicate our intent, we'll use simple wrappers around thos `Int`s like so
+- So it treats them just as any other `Int`s in the system
+- To actually communicate our intent, we'll use simple wrappers around those `Int`s like so
 
 ---
 
@@ -297,7 +297,7 @@ def fetchPost(appID: AppID,
 ???
 - Now the type signature of this function is very descriptive
 - And not only for us, but more importantly, for the compiler
-- It know now that it deals with three separate entities
+- It knows now that it deals with three separate entities
 
 ---
 
@@ -351,7 +351,7 @@ scala> fetchPost(AppID(123), FeedID(456), PostID(789))
 - With plain `Int`s good luck finding and replacing all of them across the system
 - But with a wrapper, it becomes a matter of doing the modification and fixing the resulting compilation errors
 - The compiler is there to assist you
-- The last point about being about customization of the type
+- The last point being about customization of the type
 - Unlike raw `Int`s, we can do special things with a wrapper
 - Like smart-constructors that can validate some requirements, for example that the ID is never negative
 - Or maybe have special serialization formats for different types, if for example some numbers need to be hashed or something
@@ -365,7 +365,6 @@ scala> fetchPost(AppID(123), FeedID(456), PostID(789))
 ???
 
 - I want to make a brief interlude just to point out how hard programming is
-- What I want to say is that programming is hard
 - I mean, suppose you've got your dream-job doing Scala or something
 - And you imagine that from now on you'll never set foot in any other scary language out there
 - Right?
@@ -398,6 +397,8 @@ scala> fetchPost(AppID(123), FeedID(456), PostID(789))
 
 ???
 
+- Since in a typical web-app it's not uncommon to do some templating for web pages
+- Like in the example here
 - Not only that we're dealing here with three different languages:
 - HTML, Javascript and URL syntax
 - But we're also interpolating code into them
@@ -450,6 +451,7 @@ case class SafeURLCode(value: String)
 - Now we support safe and tainted `String`s for all languages
 - But what if we get more requirements
 - Like that we sometimes need to anonymize some of our outputs
+- For example, if we have some sensitive user data that we don't to accidentally print
 - We can make more wrappers
 
 ---
@@ -521,7 +523,7 @@ object Language {
 - With three subtypes, one for each language
 - Notice how the `Language` trait is sealed and each language is a trait as well
 - This means that `Language` can't have any values
-- I can only function as a marker to communicate intent to the compiler
+- It can only function as a marker to communicate intent to the compiler
 - And that's why we call it a phantom type - it's a type without values
 
 --
@@ -555,7 +557,7 @@ case class InputCode[L <: Language,
 - We are now defining a single wrapper type around a string
 - But it's parameterized with our two phantom types
 - So we can now have any combination of languages and safety on the same wrapper
-- But unlike what we have previously, now these are separate concepts, that the compiler knows about
+- But unlike what we had previously, now these are separate concepts, that the compiler knows about
 - Let's see how we can put the wrapper to use
 
 --
@@ -615,6 +617,8 @@ scala> interpolate(htmlString)
 ???
 - The compiler will helpfully remind us what we've forgotten
 - Which was the whole point of communicating knowledge to the compiler
+- As you can see, the compiler helpfully points out to us that we are using a tainted HTML string where a safe one was expected
+
 ---
 
 
@@ -630,7 +634,7 @@ def anonymize[S <: Safety](
 - This is a function that works for any `HTML` piece of code, be it safe or not
 - So we parameterize over the `Safety` of the code, and leave it intact
 - But we do require that we receive only `HTML` input
-- That's something that we wouldn't be able to achieve with just simple wrappers without serious duplication
+- That's something that we wouldn't be able to achieve with just simple wrappers without duplication
 - Since there we mixed everything into single types, and didn't make it clear to the compiler what are the relevant concepts in our system
 - And if we try to use our function in an illegal way
 --
@@ -669,7 +673,7 @@ scala> anonymize(jsString)
 - Scala's system is quite rich, which means that we can use types to express some very sophisticated facts to the compiler
 - These are just some examples of features of the Scala type system
 - Each one enabling us to express a whole new family of facts to the compiler
-- Which in return will help the compiler help you keep track of your code
+- Which in return will help the compiler help you keep track of our code
 - Hopefully, the examples I've shown so far will give you motivation to further explore Scala's type system
 ---
 
@@ -699,7 +703,7 @@ implicit def feedID(value: Int): FeedID = FeedID(value)
 
 ???
 - After all the hard work that we invested in letting the compiler know how the various IDs are special and distinguished from plain numbers
-- In here we create an implicit conversion that converts plain numbers into IDs
+- In here we create implicit conversions that converts plain numbers into IDs
 - And so
 
 --
@@ -731,7 +735,7 @@ fetchPost(appID, feedID, postID)
 - Unlike types, it's not just facts to keep track of, this knowledge is something that the compiler can operate on, and derive new knowledge from it
 - Additionally, as we'll see shortly, implicits can connect types to concrete values
 - So that the compiler can derive new values, at compile time on our behalf
-- Let's some examples 
+- Let's see some examples 
 
 ---
 
@@ -757,7 +761,7 @@ implicit def listWriter[A](
 
 ???
 - Next we have rules
-- This can be read suppose you already know how to write an `A` value
+- This can be read as follows: suppose you already know how to write an `A` value
 - Here's the way you write a `List` of `A`
 - Since we've marked this function as implicit, the compiler will know to invoke it whenever we ask it to write a list of anything
 - So the compiler can use this rule to derive new facts automatically
@@ -864,7 +868,7 @@ implicit def listWriter[A](
 ???
 - Now we are encoding the rule of how to write `List`s of things
 - So given a writer for `A`, we create a JSON array, and write the contents of the list to it
-- This rule will be use whenever we ask for a writer for a list of things
+- This rule will be used whenever we ask for a writer for a list of things
 - We just need to specify the type, and the compiler will try to derive the right value for us
 
 --
@@ -872,7 +876,8 @@ implicit def optionWriter[A](
   implicit aWriter: Writer[A]): Writer[Option[A]] =
     new Writer[Option[A]] {
       def write(value: Option[A]): Json =
-        value.map(aWriter.write)
+        value
+          .map(aWriter.write)
           .getOrElse(JsNull)
     }
   
@@ -944,6 +949,7 @@ for parameter writer: Writer[List[scala.util.Try[String]]]
 
 ???
 - It tried to figure out on its own, but without the relevant rule, it got stuck
+- So it's telling us that it wasn't able to derive a `Writer` for a `List` of `Try` of `String`
 
 --
 
@@ -957,8 +963,8 @@ val derived: Writer[List[Try[String]]] =
 ???
 - It found the rule `List`, but it had nothing to give it
 - Since there isn't a rule for `Try`s
-- The compiler doesn't know what didn't tell it, which makes sense
-- Which serves to highlight how important it is to have good communication
+- The compiler doesn't know what we didn't tell it, which makes sense
+- This serves to highlight how important it is to have good communication
 - We can step up a notch
 
 ---
@@ -1024,8 +1030,8 @@ listWriter(
 
 ???
 - While in the background, the compiler did something like this for us
-- All the benefits of sharing our thoughts with the compiler
-- Of course, you'll probably won't have such a type in your code
+- All of this derived code comes from  the benefits of sharing our thoughts with the compiler
+- Of course, you'll probably  won't have such a type in your code
 - But deeply nested types do sometimes happen, and the compiler has your back anyways
 
 ---
@@ -1144,7 +1150,8 @@ Unclosed group near index 19
 - And the result is going to be a run-time exception
 - Which is a bit of a shame
 - Since checking the string literal that we've written here is quite simple
-- So that what we are going to do, we are going to check regex literals at compile-time
+- And it's too bad that we can't catch this mistake before actually running it
+- So that's what we are going to do, we are going to check regex literals at compile-time
 - And since doing this with types or implicits is not possible
 - We'll do this as a macro
 
@@ -1185,7 +1192,7 @@ def regexImpl(c: Context)
 
 ???
 - This is the macro signature
-- It takes a context, which is provide by the compiler
+- It takes a context, which is provided by the compiler
 - And it takes an expression that matches the `String` argument we are about to receive
 - Essentially, this is the code representing the argument that was passed to the macro
 - And our result is another piece of code, the code that we are going to produce in the macro
@@ -1221,7 +1228,7 @@ def regexImpl(c: Context)
 
 ???
 - So we do just that with the `.r` method
-- Note that this is writing at compile-time
+- Note that this is happening at compile-time
 - So instead of letting it fail, we wrap it in a `Try`
 - If everything is successful we just skip on
 - Otherwise, we halt compilation with an error message
@@ -1311,8 +1318,10 @@ object Terminator {
 
 ???
 - This code is fairly straightforward, we just go over each field write its name and then its value
+- And we wrap the whole result in a JSON object
 - It's also quite mechanical to write
 - But having written it, we have to maintain it, and nothing will keep it in sync for us
+- And it's easy to make mistakes here
 - This is a classic case of boilerplate, something that we would like to avoid
 - But in standard Scala, there's nothing that lets us manipulate case classes mechanically like this
 - So let's teach the compiler to do it for us
@@ -1344,7 +1353,8 @@ def makeWriterImpl[A: c.WeakTypeTag]
 
 ???
 - And we start with that, the `getFields` function take a type-descriptor and produces a list of its fields
-- I'll skip its implementation, since it's a bit hairy, but conceptually it's exactly that, iterate over all fields and collect them into a list
+- I'll skip its implementation, since it's a bit hairy, 
+- But conceptually it's exactly that, look at the type's constructor and put all of its fields in a list
 
 --
   val fieldWriters: List[Tree] = fields.map { field =>
@@ -1373,9 +1383,9 @@ def makeWriterImpl[A: c.WeakTypeTag]
 ???
 - Now we write the code for the writer
 - We just create a new `Writer` of the correct type
-- We the implement its write method by interpolating the field writers into it
+- We then implement its `write` method by interpolating the field writers into it
 - The double dot syntax splices the list we created as an argument list to our constructor here
-- And that's it, we've written all the code that we require for a writer
+- And that's it, we've written all the code that we require for a `Writer`
 ---
 
 ## The Writer Macro
@@ -1418,11 +1428,11 @@ Json.write(t800)
 - As I said, macros are to be avoided
 - In part because they are dangerous and in part because they are hard to use and get right
 - So here are some alternatives
-- Shapeless uses macros under the hood, so that you don't have to
+- The library Shapeless uses macros under the hood, so that you don't have to
 - Some macros can be rewritten using some generic methods that are provided by Shapeless
 - Scalameta is a newer way of doing meta-programming
 - It should be cleaner and easier to use, but it doesn't replace all macro use-cases
-- Sometimes, when macros are not enough, we can use code-generator, though typicaly that's more cumbersome
+- Sometimes, when macros are not enough, we can use code-generators, though typicaly that's more cumbersome
 - And finally, non-experimental macros for Scala are being actively developed
 - So maybe in the future we'll have a nicer alternative to what I've shown here
 ---

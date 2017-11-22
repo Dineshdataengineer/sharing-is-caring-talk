@@ -1,7 +1,5 @@
 name := "Sharing Is Caring Talk"
 
-scalaVersion := "2.12.4"
-
 val buildSettings = Defaults.coreDefaultSettings ++ List(
   scalaVersion := "2.12.4"
 )
