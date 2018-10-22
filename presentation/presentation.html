@@ -128,7 +128,7 @@ fetchPost(appID, feedID, postID)
 ```
 
 ???
-- Now you're already writing your first business application using Scala
+- Now that you've grasped JSON, sort of, you are ready to write your first business application using Scala
 - It's a big step, and you are quite hopeful
 - But much later, in the middle of the night, you get something like this
 --
@@ -225,7 +225,7 @@ class: middle, transition
 - From the standpoint of this talk
 - Types should be viewed as compiler-verified facts
 - Each occurrence of a type in our code is a fact that the compiler can track and verify its consistent use
-- So if I state that something is an `Int`, the compiler will makes sure that we consistently use it as an `Int`
+- So if I state that something is an `Int`, the compiler will make sure that we consistently use it as an `Int`
 - As a consequence, the more types we have in our program, the more consistency checks the compiler can make for us
 - The more the types are precise, the more useful the checks will be
 - And since Scala's type-system can be quite sophisticated, we can express fairly complex facts for the compiler to track
@@ -245,7 +245,7 @@ def fetchPost(appID: Int,
 - As you can see, we have our types
 - But this function is still quite confusing to use
 - Since it's easy to mix up the different `Int`s
-- And although the compiler keeps track of proper usage of `Int`s, it's not that useful in this case
+- And although the compiler keeps track of proper usage of `Int`s, it's not that useful in this case, since we have a number of `Int`s mixed together
 - But we can make it slightly less confusing by using named arguments
 
 --
@@ -295,7 +295,7 @@ def fetchPost(appID: AppID,
 ```
 
 ???
-- Now the type signature of this function is very descriptive
+- As a result, the type signature of this function is very descriptive
 - And not only for us, but more importantly, for the compiler
 - It knows now that it deals with three separate entities
 
@@ -348,7 +348,7 @@ scala> fetchPost(AppID(123), FeedID(456), PostID(789))
 - It makes refactoring easier
 - Suppose that the application-ID suddenly needs to change from `Int` to `Long`
 - Or maybe you need to add some meta-data to it
-- With plain `Int`s good luck finding and replacing all of them across the system
+- With plain `Int`s, good luck finding and replacing all of them across the system
 - But with a wrapper, it becomes a matter of doing the modification and fixing the resulting compilation errors
 - The compiler is there to assist you
 - The last point being about customization of the type
@@ -405,7 +405,7 @@ scala> fetchPost(AppID(123), FeedID(456), PostID(789))
 - And in every interpolation we have the risk of code injection
 - That's all very scary, and there's no one to help us
 - But since we're into communicating with the compiler
-- And we just learened about type-wrappers
+- And we just learned about typed-wrappers
 - Let's use those to get the compiler to help us deal with this mess
 
 ---
@@ -451,7 +451,7 @@ case class SafeURLCode(value: String)
 - Now we support safe and tainted `String`s for all languages
 - But what if we get more requirements
 - Like that we sometimes need to anonymize some of our outputs
-- For example, if we have some sensitive user data that we don't to accidentally print
+- For example, if we have some sensitive user data that we don't want to accidentally print
 - We can make more wrappers
 
 ---
@@ -630,7 +630,7 @@ def anonymize[S <: Safety](
 ```
 
 ???
-- We can now also use the fact that the language and safety of the code distinct concepts
+- We can now also use the fact that the language and safety of the code are distinct concepts
 - This is a function that works for any `HTML` piece of code, be it safe or not
 - So we parameterize over the `Safety` of the code, and leave it intact
 - But we do require that we receive only `HTML` input
@@ -656,7 +656,7 @@ scala> anonymize(jsString)
 
 ???
 - The compiler will provide a helpful message telling us what we did wrong
-- In this case we've mixed up the different language that we have
+- In this case we've mixed up the different languages that we have
 - So again, by communicating various facts to the compiler, we obtain useful assistance in return
 ---
 
@@ -670,10 +670,10 @@ scala> anonymize(jsString)
 
 ???
 - As I mentioned in the beginning of this part
-- Scala's system is quite rich, which means that we can use types to express some very sophisticated facts to the compiler
+- Scala's type system is quite rich, which means that we can use types to express some very sophisticated facts to the compiler
 - These are just some examples of features of the Scala type system
 - Each one enabling us to express a whole new family of facts to the compiler
-- Which in return will help the compiler help you keep track of our code
+- Which in return will help the compiler help us keep track of our code
 - Hopefully, the examples I've shown so far will give you motivation to further explore Scala's type system
 ---
 
@@ -719,7 +719,7 @@ fetchPost(appID, feedID, postID)
 
 ???
 - The bug that we had before, that was being caught by the compiler goes right through
-- The compiler no longer distinguishes numbers from IDs
+- We've managed to confuse the compiler, so that it no longer distinguishes numbers from IDs
 - So that's an example of what you shouldn't be doing with implicits
 - But what we want to talk about in this part is how we can leverage implicits to communicate with the compiler
 
@@ -776,7 +776,7 @@ def write[A](value: A)
 ???
 - The last component in our communication plan is to ask something from the compiler
 - This can be read as:
-- Whenever I want to write some value of type `A`, please derive the writer from me
+- Whenever I want to write some value of type `A`, please derive the writer for me
 - And when we choose a specific `A`, say `List[String]`
 - The compiler will look at all the relevant facts and rules and try to derive it for us
 - Like here
@@ -791,7 +791,7 @@ write(List("a", "b", "c")) // ["a", "b", "c"]
 ???
 - Here we've selected the type to be a `List` of `String`
 - And we are asking the compiler to derive the appropriate writer for it
-- Which it does since it know how to write `String`s
+- Which it does since it knows how to write `String`s
 - Hence it can use the rule to write `List`s of `String`s
 - And we get the correct result
 
@@ -802,7 +802,7 @@ write(List("a", "b", "c")) // ["a", "b", "c"]
 ???
 - Now, I claim that part of the trouble that people have with implicits comes from their name
 - People are afraid of things happening implicitly, without our control, somewhere in the backgroud
-- To fix this, I propose rename them
+- To fix this, I propose to rename them
 
 --
 
@@ -833,7 +833,7 @@ def write[A](value: A)
 - And lastly, we have derivation requests for compiler-provided facts
 - I think that without the word implicit it becomes more apparent that what we are doing here is actually communicating with the compiler
 - We are telling it facts and rules, and in return, guided by the types, it can derive values for us
-- But all of this a bit abstract, let's see how it work with actual code
+- But all of this a bit abstract, let's see how it works with actual code
 
 ---
 
@@ -903,7 +903,7 @@ write(pills) // ["blue", null, "red"]
 - In this case, we are asking the compiler to derive a `Writer` for a list of optional values
 - And it will happily do it for us
 - We taught it all that needs to be known for this derivation
-- So it can apply the different rules for us without any help from us
+- So it can apply the different rules  without any help from us
 - But what's happening behind the scenes is this
 --
 
@@ -983,7 +983,7 @@ implicit def eitherWriter[A, B](
 
 ???
 - We are now specifying slightly more complicated rules
-- In this case, given two different `Writer`s we are deriving a `Writers` for tuples and `Either`s
+- In this case, given two different `Writer`s we are deriving a `Writer` for tuples and `Either`s
 - And as a result we can do something like this
 
 ---
@@ -1003,7 +1003,7 @@ val pills: List[Option[
 ```
 
 ???
-- The type here is so long it doesn't fit on a line
+- The type here is so long it doesn't fit on a line, so don't do this in real code
 - But it illustrates a point
 - Deriving a writer manually for this type will be very tedious
 - But since we communicated with the compiler so nicely
@@ -1045,9 +1045,9 @@ listWriter(
 ???
 - So, this should have illustrated how we can use implicits as means of communication with the compiler
 - There are various patterns of using implicits to achieve this goal
-- What we did here is an instance of the type-class pattern
-- We can also leverage implicits to dependency-injection that is driven by types
-- And finally, the library Shapeless uses implicits to implements all sorts of sophisticated compile-time knowledge
+- What we did here is an instance of the typeclass pattern
+- We can also leverage implicits to do dependency-injection that is driven by types
+- And finally, the library Shapeless uses implicits to implement all sorts of sophisticated compile-time knowledge
 
 ---
 class: middle, transition
@@ -1079,7 +1079,7 @@ Now their problem has a problem.
 - Additionally, we can run arbitrary functions during the evaluation of  a macro
 - And it's not unheard of to talk to a database at compile-time
 - With all that, they are still experimental in the Scala language
-- And they are exactly as dangerous as all this sounds
+- And they are exactly as dangerous as all of this sounds
 - Not unlike something like this:
 ---
 
@@ -1088,7 +1088,7 @@ Now their problem has a problem.
 .centered[.carFixing[![](car-fixing.jpg)]]
 
 ???
-- Where the compiler like this truck, that we are trying to fix in midair
+- Where the compiler is like this truck, that we are trying to fix in midair
 - So you can, rightly, ask yourself: when do we actually want to use macros?
 ---
 
@@ -1124,7 +1124,7 @@ val color = sentence match {
 ???
 - Scala has some very nice support for regular expressions
 - We can easily define and pattern match on a regular expression
-- But if we do some syntax mistake
+- But if we make some syntax mistake
 --
 
 ```
@@ -1147,7 +1147,7 @@ Unclosed group near index 19
 ```
 
 ???
-- And the result is going to be a run-time exception
+- The result is going to be a run-time exception
 - Which is a bit of a shame
 - Since checking the string literal that we've written here is quite simple
 - And it's too bad that we can't catch this mistake before actually running it
@@ -1192,11 +1192,11 @@ def regexImpl(c: Context)
 
 ???
 - This is the macro signature
-- It takes a context, which is provided by the compiler
+- It takes a context, which is provided by the compiler and gives us access to the macro infra-structure
 - And it takes an expression that matches the `String` argument we are about to receive
 - Essentially, this is the code representing the argument that was passed to the macro
 - And our result is another piece of code, the code that we are going to produce in the macro
-- The import is yet some more boilerplate
+- This import is yet some more boilerplate
 - But we are not going to go into the details of macro writing here
 - Since that will take us too deep
 --
@@ -1230,7 +1230,7 @@ def regexImpl(c: Context)
 - So we do just that with the `.r` method
 - Note that this is happening at compile-time
 - So instead of letting it fail, we wrap it in a `Try`
-- If everything is successful we just skip on
+- If everything is successful we just move on
 - Otherwise, we halt compilation with an error message
 - And for the last step
 --
@@ -1239,7 +1239,7 @@ def regexImpl(c: Context)
   
 ???
 - We are creating the code to be returned by the macro
-- So we just converting our string literal into a regex
+- So we are just converting our string literal into a regex
 - Since we passed our check above, we know that this is safe
 - And this is it, the macro is ready to use
 ---
@@ -1343,7 +1343,7 @@ def makeWriterImpl[A: c.WeakTypeTag]
 .writerBrace[```}```]
 
 ???
-- We start with the macro boilerplate
+- We start with the macro incantation
 - Here we are saying that given a type `A` we would like to produce code for a `Writer` of `A`
 - The `tpe` value is what will let us access data about `A` at compile-time
 --
@@ -1415,6 +1415,7 @@ Json.write(t800)
 
 ???
 - So yet again, we've managed to teach the compiler something new
+- Mission accomplished
 ---
 
 ## Macro Alternatives
@@ -1450,13 +1451,12 @@ Json.write(t800)
 Full code and presentation:  
 https://github.com/ncreep/sharing-is-caring-talk
 
-
 ???
 - To sum up
 - The compiler is not your enemy, the more you communicate with it, the more helpful it can be
 - We've seen three methods of communication
 - Types which let us state facts for the compiler to track for us
-- Implicits, that allow to teach the compiler various rules which it can use to derive values for us
+- Implicits, that allow us to teach the compiler various rules which it can use to derive values for us
 - And macros, as a last resort, with which we can teach the compiler completely new things
 - With all these tools in hand, we can share our thoughts with the compiler
 - And in return the compiler can help us with our code
