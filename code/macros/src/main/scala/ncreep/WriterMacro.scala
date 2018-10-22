@@ -23,7 +23,7 @@ object WriterMacro {
     val fields: List[TermName] = getFields(tpe)
 
     val fieldWriters: List[Tree] = fields.map { field =>
-      // in a more real scenario, the field name should probably be decoded
+      // in a more realistic scenario, the field name should probably be decoded
       q"${field.toString} -> ncreep.Json.write(value.$field)"
     }
 

@@ -66,7 +66,8 @@ object Writer {
           .getOrElse(JsNull)
     }
 
-  implicit def tupleWriter[A, B](implicit aWriter: Writer[A],
+  implicit def tupleWriter[A, B](implicit 
+                                 aWriter: Writer[A],
                                  bWriter: Writer[B]): Writer[(A, B)] =
     new Writer[(A, B)] {
       def write(value: (A, B)): Json = JsArray {
@@ -77,7 +78,8 @@ object Writer {
       }
     }
 
-  implicit def eitherWriter[A, B](implicit aWriter: Writer[A],
+  implicit def eitherWriter[A, B](implicit 
+                                  aWriter: Writer[A],
                                   bWriter: Writer[B]): Writer[Either[A, B]] =
     new Writer[Either[A, B]] {
       def write(value: Either[A, B]): Json =

@@ -1,21 +1,19 @@
-name := "Sharing Is Caring Talk"
+name := "sharing-is-caring-talk"
 
-val buildSettings = Defaults.coreDefaultSettings ++ List(
-  scalaVersion := "2.12.4"
-)
+val commonSettings = List(scalaVersion := "2.12.7")
 
-lazy val json = (project in file("json"))
-  .settings(buildSettings)
+lazy val json = project
+  .settings(commonSettings)
 
-lazy val macros = (project in file("macros"))
+lazy val macros = project
   .settings(
-    buildSettings ++ List(
+    commonSettings ++ List(
       libraryDependencies ++= List(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
       )
     )
   ).dependsOn(json)
 
-lazy val root = (project in file("."))
-  .settings(buildSettings)
+lazy val core = project
+  .settings(commonSettings)
   .dependsOn(json, macros)
